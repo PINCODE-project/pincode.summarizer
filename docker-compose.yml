@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  ai_api:
+    container_name: summarizator_ai_api
+    build:
+      context: ./AI_API
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "5021:5000"
+    networks:
+      - summarizator_network
+
+networks:
+  summarizator_network:
+    driver: bridge

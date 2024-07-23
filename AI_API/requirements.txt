@@ -1,0 +1,10 @@
+setuptools
+flask_cors
+openai-whisper
+pyannote.audio
+soundfile
+speechbrain==0.5.16
+numpy==1.26.4
+requests
+python-dotenv
+onnxruntime
