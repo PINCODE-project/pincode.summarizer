@@ -1,0 +1,37 @@
+:root{
+    /* Colors */
+    --color-gray-100: #4F4F53;
+    --color-gray-200: #313134;
+    --color-gray-300: #242428;
+    --color-gray-400: #202023;
+    --color-gray-500: #030303;
+
+    --color-white-100: #737373;
+    --color-white-200: #BBBBBB;
+    --color-white-300: #C2C2C2;
+    --color-white-400: #BCBBBB;
+    --color-white-500: #FFFFFF;
+
+
+    --color-pink-100: #F7BCE2;
+    --color-pink-200: #F7A6DB;
+    --color-pink-300: #F086CB;
+    --color-pink-400: #F053A1;
+    --color-pink-500: #BE185D;
+
+    --color-teal-100: #B8F3EA;
+    --color-teal-200: #A3F3E8;
+    --color-teal-300: #81E6D9;
+    --color-teal-400: #0DEBCC;
+    --color-teal-500: #2A9687;
+
+    /* Border Radius */
+    --border-radius-s: 10px;
+    --border-radius-m: 15px;
+    --border-radius-l: 20px;
+    --border-radius-xl: 30px;
+
+    /* Fonts */
+    --main-font: SFPro, serif;
+    --secondary-font: MPlus, serif;
+}

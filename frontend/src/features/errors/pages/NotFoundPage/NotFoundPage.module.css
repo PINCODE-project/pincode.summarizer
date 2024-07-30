@@ -1,0 +1,32 @@
+.root {
+    padding-top: 80px;
+    padding-bottom: 80px;
+}
+
+.inner {
+    position: relative;
+}
+
+.image {
+    position: absolute;
+    inset: 0;
+    opacity: 0.75;
+}
+
+.content {
+    padding-top: 220px;
+    position: relative;
+    z-index: 1;
+}
+
+.title {
+    font-family: var(--main-font), serif;
+    text-align: center;
+    font-weight: 900;
+    font-size: 38px;
+}
+
+.description {
+    max-width: 600px;
+    margin: 40px auto !important;
+}

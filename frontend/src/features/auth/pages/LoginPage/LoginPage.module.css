@@ -1,0 +1,24 @@
+.loginPage {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.logo {
+    width: 400px;
+}
+
+.description {
+    text-align: center;
+    color: var(--color-white-100);
+    font-weight: 400;
+    font-size: 16px;
+}
+

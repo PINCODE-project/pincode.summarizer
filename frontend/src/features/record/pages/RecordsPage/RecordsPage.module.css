@@ -1,0 +1,18 @@
+.projectsPage {
+    width: 100%;
+    display: flex;
+    /*justify-content: center;*/
+}
+.recordsContainer {
+}
+.audioControlContainer {
+    position: fixed !important;
+    bottom: 0;
+}
+
+.audioControl {
+    position: fixed !important;
+    bottom: 0;
+    background: var(--mantine-color-dark-5) !important;
+    border-radius: var(--mantine-radius-md) var(--mantine-radius-md) 0 0 !important;
+}

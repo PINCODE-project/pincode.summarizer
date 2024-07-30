@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  voice_brief_server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "5040:5000"
+    networks:
+      - voice_brief_network
+
+networks:
+  voice_brief_network:
+    driver: bridge

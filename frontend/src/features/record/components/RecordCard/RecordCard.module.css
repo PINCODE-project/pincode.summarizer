@@ -1,0 +1,9 @@
+.card {
+    background: var(--mantine-color-dark-6) !important;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.selected {
+    border: 1px solid var(--mantine-color-dark-3);
+}

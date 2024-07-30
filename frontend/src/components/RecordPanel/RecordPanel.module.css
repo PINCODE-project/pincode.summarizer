@@ -1,0 +1,10 @@
+.player {
+    width: 100%;
+}
+
+.transcribeCard {
+    background: var(--mantine-color-dark-5) !important;
+    max-height: 300px !important;
+    height: 100% !important;
+}
+
