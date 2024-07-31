@@ -21,6 +21,15 @@ function createWindow () {
         })
     })
 
+    session.defaultSession.setDevicePermissionHandler((details) => {
+        console.log('Запрашиваемый тип устройства:', details.deviceType);
+        return true;
+        // if (details.deviceType === 'media') {
+        //     return true;
+        // }
+        // return false;
+    });
+
     win.setMenuBarVisibility(false)
     win.loadURL('http://localhost:3000');
     win.setTitle("PinCode.Summarizer")

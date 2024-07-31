@@ -27,6 +27,17 @@ export function RecordsPage() {
 
     const startRecording = async () => {
         try {
+            const audioContext = new AudioContext();
+
+            const micStream = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: false
+            })
+
+            if (!micStream.getAudioTracks().length) {
+                console.error('Не удалось получить аудиотреки с микрофона.');
+            }
+
             const stream = await navigator.mediaDevices.getDisplayMedia({
                 video: true,
                 audio: {
@@ -42,11 +53,23 @@ export function RecordsPage() {
                 audioStream.addTrack(track);
             }
 
+            for (const track of micStream.getAudioTracks()) {
+                audioStream.addTrack(track);
+            }
+
             for (const track of stream.getVideoTracks()) {
                 track.stop();
             }
 
-            const recorder = new MediaRecorder(audioStream);
+            const audioIn_01 = audioContext.createMediaStreamSource(stream);
+            const audioIn_02 = audioContext.createMediaStreamSource(micStream);
+
+            const dest = audioContext.createMediaStreamDestination();
+
+            audioIn_01.connect(dest);
+            audioIn_02.connect(dest);
+
+            const recorder = new MediaRecorder(dest.stream);
             mediaRecorderRef.current = recorder;
 
             recorder.ondataavailable = (event) => {
