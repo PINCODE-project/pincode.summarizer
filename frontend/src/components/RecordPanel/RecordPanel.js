@@ -1,17 +1,4 @@
-import {
-    ActionIcon,
-    Button,
-    Center,
-    Group,
-    Loader,
-    Paper,
-    ScrollArea,
-    Stack,
-    Tabs,
-    Text,
-    Title,
-    TypographyStylesProvider
-} from '@mantine/core';
+import {ActionIcon, Button, Center, Group, Loader, Paper, ScrollArea, Stack, Tabs, Text, Title} from '@mantine/core';
 import {useRecord} from "../../hooks/useRecord";
 import {useTranscribe} from "../../hooks/useTranscribe";
 import {notifications} from "@mantine/notifications";
@@ -153,12 +140,12 @@ export function RecordPanel(props) {
                             </ScrollArea>
                         </Paper>
                         <Button
-                            disabled={record.record.transcription}
+                            disabled={record.record.status === "Transcribing" || record.record.status === "Summarizing"}
                             onClick={() => {
                                 transcribe.mutate(props.recordId)
                                 setTimeout(() => {
-                                    queryClient.invalidateQueries({ queryKey: ['getRecords'] })
-                                    queryClient.invalidateQueries({ queryKey: ['getRecord', props.recordId] })
+                                    queryClient.invalidateQueries({queryKey: ['getRecords']})
+                                    queryClient.invalidateQueries({queryKey: ['getRecord', props.recordId]})
                                 }, 1000)
                             }}>Транскрибировать</Button>
                     </Stack>
@@ -176,12 +163,12 @@ export function RecordPanel(props) {
                             </ScrollArea>
                         </Paper>
                         <Button
-                            disabled={!record.record.transcription || record.record.summarization}
+                            disabled={!record.record.transcription || record.record.status === "Transcribing" || record.record.status === "Summarizing"}
                             onClick={() => {
                                 summarize.mutate(props.recordId)
                                 setTimeout(() => {
-                                    queryClient.invalidateQueries({ queryKey: ['getRecords'] })
-                                    queryClient.invalidateQueries({ queryKey: ['getRecord', props.recordId] })
+                                    queryClient.invalidateQueries({queryKey: ['getRecords']})
+                                    queryClient.invalidateQueries({queryKey: ['getRecord', props.recordId]})
                                 }, 1000)
                             }}>Суммаризировать</Button>
                     </Stack>
