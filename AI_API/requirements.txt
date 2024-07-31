@@ -1,5 +1,4 @@
 setuptools
-flask_cors
 openai-whisper
 pyannote.audio
 soundfile
@@ -8,3 +7,8 @@ numpy==1.26.4
 requests
 python-dotenv
 onnxruntime
+torch
+torchaudio
+fastapi
+uvicorn
+pydub

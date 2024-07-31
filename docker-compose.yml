@@ -10,8 +10,20 @@ services:
     ports:
       - "5021:5000"
     networks:
-      - summarizator_network
+      - voice_brief_network
+  voice_brief_server:
+    container_name: voice_brief_server
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend/static/uploads:/usr/src/app/static/uploads
+    restart: always
+    ports:
+      - "5040:5000"
+    networks:
+      - voice_brief_network
 
 networks:
-  summarizator_network:
+  voice_brief_network:
     driver: bridge

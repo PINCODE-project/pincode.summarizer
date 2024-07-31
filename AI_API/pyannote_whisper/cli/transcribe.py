@@ -11,7 +11,10 @@ from whisper.utils import (WriteSRT, WriteTXT, WriteVTT, optional_float,
                            optional_int, str2bool)
 
 from pyannote_whisper.utils import diarize_text, write_to_txt
+from dotenv import load_dotenv
 
+load_dotenv()
+ai_api_url = os.getenv('AI_API_URL')
 
 def cli():
     from whisper import available_models
@@ -60,7 +63,7 @@ def cli():
                         help="if the average log probability is lower than this value, treat the decoding as failed")
     parser.add_argument("--no_speech_threshold", type=optional_float, default=0.6,
                         help="if the probability of the <|nospeech|> token is higher than this value AND the decoding has failed due to `logprob_threshold`, consider the segment as silence")
-    parser.add_argument("--threads", type=optional_int, default=0,
+    parser.add_argument("--threads", type=optional_int, default=3,
                         help="number of threads used by torch for CPU inference; supercedes MKL_NUM_THREADS/OMP_NUM_THREADS")
     parser.add_argument("--diarization", type=str2bool, default=True,
                         help="whether to perform speaker diarization; True by default")
@@ -98,8 +101,8 @@ def cli():
     diarization = args.pop("diarization")
     if diarization:
         from pyannote.audio import Pipeline
-        pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization",
-                                            use_auth_token="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")
+        pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.0",
+                                            use_auth_token=ai_api_url)
 
     for audio_path in args.pop("audio"):
         result = transcribe(model, audio_path, temperature=temperature,**args)
