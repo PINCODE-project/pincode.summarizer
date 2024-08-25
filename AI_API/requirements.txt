@@ -12,3 +12,4 @@ torchaudio
 fastapi
 uvicorn
 pydub
+python-multipart
