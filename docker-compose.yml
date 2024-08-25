@@ -7,6 +7,8 @@ services:
       context: ./AI_API
       dockerfile: Dockerfile
     restart: always
+    env_file:
+      - .env
     ports:
       - "5021:5000"
     networks:

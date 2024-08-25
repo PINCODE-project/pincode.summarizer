@@ -21,9 +21,8 @@ import math
 # Настройка приложения
 UPLOAD_FOLDER = 'uploads'
 app = FastAPI()
-load_dotenv()
-ai_api_url = os.getenv('AI_API_URL')
-use_auth_token = os.getenv('USE_AUTH_TOKEN')
+ai_api_url = os.environ['AI_API_URL']
+use_auth_token = os.environ['USE_AUTH_TOKEN']
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 MAX_FILE_SIZE_MB = 24.99
