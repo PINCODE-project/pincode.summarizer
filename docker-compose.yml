@@ -28,6 +28,8 @@ services:
     volumes:
       - ./backend/static/uploads:/usr/src/app/static/uploads
     restart: always
+    env_file:
+      - .env
     ports:
       - "5040:5000"
     networks:
