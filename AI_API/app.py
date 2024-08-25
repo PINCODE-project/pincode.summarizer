@@ -12,9 +12,11 @@ from dotenv import load_dotenv
 from typing import List, Dict
 import time
 import logging
-from pydub import AudioSegment
 from concurrent.futures import ThreadPoolExecutor
 import subprocess
+import torch
+from pydub import AudioSegment
+import math
 
 # Настройка приложения
 UPLOAD_FOLDER = 'uploads'
@@ -24,7 +26,7 @@ ai_api_url = os.getenv('AI_API_URL')
 use_auth_token = os.getenv('USE_AUTH_TOKEN')
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
+MAX_FILE_SIZE_MB = 24.99
 
 # Разрешить CORS для всех источников
 app.add_middleware(
@@ -36,40 +38,11 @@ app.add_middleware(
 )
 
 # Инициализация модели для диаризации речи
-pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.0", use_auth_token=use_auth_token)
-
-
-def resample_audio(file_path, new_sample_rate):
-    new_wav_path = f"{os.path.splitext(file_path)[0]}.wav"
-    # Ресэмплинг и конвертация WAV в MP3 с использованием ffmpeg
-    command = [
-        'ffmpeg',
-        '-i', file_path,
-        '-ar', str(new_sample_rate),
-        '-ac', '2',
-        new_wav_path
-    ]
-    subprocess.run(command)
-    return new_wav_path
-
-
-def convert_to_mp3(file_path):
-    # Получаем имя файла без расширения и его расширение
-    file_name, file_extension = os.path.splitext(file_path)
-    logger.info(f"file_name: {file_name}, file_extension: {file_extension}")
-    # Задаем выходной путь для MP3 файла
-    output_file_path = f"{file_name}.mp3"
-    logger.info(f"output_file_path: {output_file_path}")
-    # Загружаем аудиофайл
-    audio = AudioSegment.from_file(file_path, format=file_extension[1:])
-    # Экспортируем аудиофайл в формат MP3
-    audio.export(output_file_path, format="mp3")
-
-    logger.info(f"File saved to {output_file_path}")
-    os.remove(file_path)
-
-    return output_file_path
-
+pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1", use_auth_token=use_auth_token)
+# Переключение на GPU, если доступно
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+pipeline.to(device)
+logger.info(f"Using device: {device}")
 
 # Функция для суммаризации текста с использованием API
 def summarize_text_with_api(text: str, parts: List[str]) -> str:
@@ -103,17 +76,62 @@ def transcribe_text_with_api(file_path: str, start_time) -> Dict:
     with open(file_path, 'rb') as file:
         files = {'file': (file_path.split('/')[-1], file)}
         response = requests.post(f"{ai_api_url}/transcriptions", files=files)
-        logger.info(f"{time.time() - start_time:.2f} sec: Transcription completed in func")
+        logger.info(f"{time.time() - start_time:.2f} sec: Transcription completed in groq func")
         if response.status_code == 200:
             return response.json()
         else:
-            response.raise_for_status()
+            return response.raise_for_status()
+
+
+def split_audio(file_path, chunk_size_mb):
+    audio = AudioSegment.from_file(file_path)
+    chunk_duration_ms = (chunk_size_mb * 1024 * 1024) / (len(audio.raw_data) / len(audio))
+
+    chunks = []
+    for i in range(0, len(audio), int(chunk_duration_ms)):
+        chunk = audio[i:i + int(chunk_duration_ms)]
+        chunks.append(chunk)
+
+    return chunks
+
+
+def process_audio_file(file_path, start_time, executor):
+    file_size = os.path.getsize(file_path) / (1024 * 1024)
+    futures = []
+    if file_size >= MAX_FILE_SIZE_MB:
+        logger.info(f'Audio file is larger than {MAX_FILE_SIZE_MB} MB, splitting...')
+        chunks = split_audio(file_path, MAX_FILE_SIZE_MB)
+        for i, chunk in enumerate(chunks):
+            chunk_file_path = f"{file_path}_chunk_{i}.mp3"
+            chunk.export(chunk_file_path, format="mp3")
+            logger.info(f"Processing chunk {i + 1}/{len(chunks)}: {chunk_file_path}")
+            futures.append(executor.submit(transcribe_text_with_api, chunk_file_path, start_time))
+            logger.info(f"{time.time() - start_time:.2f} sec: Transcription task for chunk {i + 1} started")
+    else:
+        logger.info(f'Audio transcribing on groq whisper')
+        futures.append(executor.submit(transcribe_text_with_api, file_path, start_time))
+        logger.info(f"{time.time() - start_time:.2f} sec: Transcription task started")
+    return futures
+
+def resample_audio(file_path, new_sample_rate):
+    new_wav_path = f"{os.path.splitext(file_path)[0]}.wav"
+    # Ресэмплинг и конвертация в WAV с использованием ffmpeg
+    command = [
+        'ffmpeg',
+        '-i', file_path,
+        '-ar', str(new_sample_rate),
+        '-ac', '2',
+        new_wav_path
+    ]
+    subprocess.run(command)
+    os.remove(file_path)
+    return new_wav_path
 
 
 # Эндпоинт для транскрибации аудио
 @app.post("/transcribe")
 async def transcribe(audio: UploadFile = File(...)):
-    executor = ThreadPoolExecutor(max_workers=1)
+    executor = ThreadPoolExecutor(max_workers=4)
     start_time = time.time()
     logger.info(f"{0} sec: Start processing request")
 
@@ -127,29 +145,44 @@ async def transcribe(audio: UploadFile = File(...)):
         f.write(await audio.read())
     logger.info(f"{time.time() - start_time:.2f} sec: Audio file saved as {save_path}")
 
-    wav_path = resample_audio(save_path, new_sample_rate=4000)
+    # Преобразование аудио в WAV и изменение сэмпл рейта
+    save_path = resample_audio(save_path, new_sample_rate=16000)
     logger.info(f'Resampling audio completed in func, save: {save_path}')
 
-    # Преобразование любого аудио файла в mp3
-    if extension != 'mp3':
-        save_path = convert_to_mp3(save_path)
-
-    # Запускаем асинхронную задачу транскрибирования
-    future = executor.submit(transcribe_text_with_api, save_path, start_time)
-    logger.info(f"{time.time() - start_time:.2f} sec: Transcription task started")
+    # Отправка аудио в функцию для деления и отправки в groq
+    futures = process_audio_file(save_path, start_time, executor)
 
     # Загружаем аудио
-    waveform, sample_rate = torchaudio.load(wav_path)
+    waveform, sample_rate = torchaudio.load(save_path)
     logger.info(f"{time.time() - start_time:.2f} sec: Audio open - sample_rate: {sample_rate}")
+    # Диаризация аудио
     diarization_result = pipeline({"waveform": waveform, "sample_rate": sample_rate})
-    #diarization_result = pipeline(wav_path)
     logger.info(f"{time.time() - start_time:.2f} sec: Diarization completed")
 
+    asr_result = {}
+    prev_id, prev_start, prev_end = 0, 0.0, 0.0
     # Ожидаем завершения транскрибирования
-    try:
-        asr_result = future.result()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    for future in futures:
+        try:
+            chunk = future.result()
+            temp_segments = []
+            segments = chunk['segments']
+            for segment in segments:
+                segment['id'] += prev_id
+                segment['start'] += prev_start
+                segment['end'] += prev_end
+                temp_segments.append(segment)
+            chunk['segments'] = temp_segments
+            prev_chunk = temp_segments[-1]
+            prev_id = prev_chunk['id']
+            prev_start = prev_chunk['start']
+            prev_end = prev_chunk['end']
+            if not asr_result:
+                asr_result = chunk
+            else:
+                asr_result['segments'] = asr_result['segments'] + chunk['segments']
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
     logger.info(f"{time.time() - start_time:.2f} sec: Transcription completed")
 
     final_result = diarize_text(asr_result, diarization_result)

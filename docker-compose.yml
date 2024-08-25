@@ -11,6 +11,13 @@ services:
       - "5021:5000"
     networks:
       - voice_brief_network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
   voice_brief_server:
     container_name: voice_brief_server
     build:
