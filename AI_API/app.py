@@ -143,9 +143,9 @@ async def transcribe(audio: UploadFile = File(...)):
     with open(save_path, 'wb') as f:
         f.write(await audio.read())
     logger.info(f"{time.time() - start_time:.2f} sec: Audio file saved as {save_path}")
-    waveform, sample_rate = torchaudio.load(save_path)
+    
     # Преобразование аудио в WAV и изменение сэмпл рейта
-    save_path = resample_audio(save_path, new_sample_rate=sample_rate)
+    save_path = resample_audio(save_path, new_sample_rate=16000)
     logger.info(f'Resampling audio completed in func, save: {save_path}')
 
     # Отправка аудио в функцию для деления и отправки в groq
