@@ -4,7 +4,7 @@
   "description": "Фронтенд-часть сервиса для объединения Swagger схем",
   "author": "Maxim CatDeveloper",
   "private": true,
-  "main": "public/main.js",
+  "main": "main.js",
   "dependencies": {
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",

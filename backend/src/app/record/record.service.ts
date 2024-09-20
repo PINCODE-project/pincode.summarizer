@@ -123,6 +123,8 @@ export class RecordService {
     }
 
     async findOne(id: string, userId: string) {
+        if(!id)
+            return;
         const record = await this.recordRepository.findOne({
             where: {id},
             relations: {

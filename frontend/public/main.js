@@ -31,10 +31,10 @@ function createWindow () {
     });
 
     win.setMenuBarVisibility(false)
-    win.loadURL('http://localhost:3000');
+    win.loadURL('https://voice-brief.netlify.app/');
     win.setTitle("PinCode.Summarizer")
 
-    win.webContents.openDevTools()
+    // win.webContents.openDevTools()
 }
 
 app.whenReady().then(createWindow)

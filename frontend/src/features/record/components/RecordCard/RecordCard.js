@@ -10,7 +10,7 @@ export function RecordCard(props) {
     const navigate = useNavigate()
     let date = new Date(props.record.updatedAt ?? "2024-07-21 00:00:00");
     let dateArray = date.toDateString().split(" ")
-    let timeArray = date.toTimeString().split(":")
+    let timeArray = props.record.updatedAt.split("T")[1].split(".")
 
     const translateMonth = {
         "Jan": "января",
@@ -41,7 +41,7 @@ export function RecordCard(props) {
             <Group justify="space-between">
                 <Stack gap="xs">
                     <Title order={4}>{props.record.name}</Title>
-                    <Text c="dimmed">{`${dateArray[2]} ${translateMonth[dateArray[1]]}, ${dateArray[3]}, ${timeArray[0]}:${timeArray[1]}`}</Text>
+                    <Text c="dimmed">{`${dateArray[2]} ${translateMonth[dateArray[1]]}, ${dateArray[3]}, ${timeArray[0]}`}</Text>
                 </Stack>
                 <Group>
                     <RecordTag tag={props.record.status}/>
