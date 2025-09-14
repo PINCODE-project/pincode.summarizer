@@ -1,6 +1,6 @@
 export class ConfigService {
     // static HOST = 'https://pincode-dev.ru/swagger-provider'
-    static HOST = 'https://pincode-dev.ru/voice-brief'
+    static HOST = 'https://backend-voice-brief.pincode-infra.ru'
     static API = `${this.HOST}/api`
     static STATIC = `${this.API}/static`
 
